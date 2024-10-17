@@ -1,7 +1,7 @@
 <template>
   產品列表
   <div class="text-end">
-    <button class="btn btn-primary" type="button" @click="this.$refs.ProductModal.showModal()">新增產品</button>
+    <button class="btn btn-primary" type="button" @click="openModal(true, {})">新增產品</button>
   </div>
   <table class="table mt-4">
     <thead>
@@ -11,7 +11,7 @@
         <th width="120">原價</th>
         <th width="120">售價</th>
         <th width="100">是否啟用</th>
-        <th width="200">編輯</th>
+        <th width="200" >編輯</th>
       </tr>
     </thead>
     <tbody>
@@ -30,14 +30,17 @@
         </td>
         <td>
           <div class="btn-group">
-            <button class="btn btn-outline-primary btn-sm">編輯</button>
-            <button class="btn btn-outline-danger btn-sm">刪除</button>
+            <button class="btn btn-outline-primary btn-sm" @click="openModal(false, item)">編輯</button>
+            <button class="btn btn-outline-danger btn-sm" @click="deleteProduct(item)">刪除</button>
           </div>
         </td>
       </tr>
     </tbody>
   </table>
-  <ProductModal ref="ProductModal"></ProductModal>
+  <ProductModal
+   :product="temProduct"
+   @updata-product="updataProduct"
+   ref="ProductModal"></ProductModal>
 </template>
 
 <script>
@@ -46,13 +49,25 @@ export default {
   data () {
     return {
       products: [],
-      pagnation: {}
+      pagnation: {},
+      temProduct: {},
+      isNew: false
     }
   },
   components: {
     ProductModal
   },
   methods: {
+    openModal (isNew, item) {
+      if (isNew) {
+        this.temProduct = {}
+      } else {
+        this.temProduct = { ...item }
+      }
+      this.isNew = isNew
+      const productModal = this.$refs.ProductModal
+      productModal.showModal()
+    },
     getProducts () {
       const api = `${process.env.VUE_APP_API}api/${process.env.VUE_APP_PATH}/admin/products`
       this.$http.get(api)
@@ -62,6 +77,32 @@ export default {
         })
         .catch(err => {
           console.log(err)
+        })
+    },
+    updataProduct (temp) {
+      this.temProduct = temp
+      let api = `${process.env.VUE_APP_API}api/${process.env.VUE_APP_PATH}/admin/product`
+      let httpMethods = 'post'
+      if (!this.isNew) {
+        api = `${process.env.VUE_APP_API}api/${process.env.VUE_APP_PATH}/admin/product/:${temp.id}`
+        httpMethods = 'put'
+      }
+      this.$http[httpMethods](api, { data: temp })
+        .then(res => {
+          this.$refs.ProductModal.hideModal()
+          this.getProducts()
+        })
+        .catch(err => {
+          console.log(err)
+        })
+    },
+    deleteProduct (item) {
+      const api = `${process.env.VUE_APP_API}api/${process.env.VUE_APP_PATH}/admin/product/${item.id}`
+      this.$http.delete(api)
+        .then(res => {
+          console.log(res)
+          this.$refs.ProductModal.hideModal()
+          this.getProducts()
         })
     }
   },
