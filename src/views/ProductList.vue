@@ -37,6 +37,7 @@
       </tr>
     </tbody>
   </table>
+  <Pagination :pages="pagnation" @emit-pages="getProducts"></Pagination>
   <ProductModal
    :product="temProduct"
    @updata-product="updataProduct"
@@ -44,6 +45,7 @@
 </template>
 
 <script>
+import Pagination from '@/components/Pagination.vue'
 import ProductModal from './ProductModal.vue'
 export default {
   data () {
@@ -56,7 +58,8 @@ export default {
     }
   },
   components: {
-    ProductModal
+    ProductModal,
+    Pagination
   },
   inject: ['emitter'],
   methods: {
@@ -75,6 +78,7 @@ export default {
       this.isLoading = true
       this.$http.get(api)
         .then(res => {
+          console.log('res', res)
           this.isLoading = false
           this.products = res.data.products
           this.pagnation = res.data.pagination
