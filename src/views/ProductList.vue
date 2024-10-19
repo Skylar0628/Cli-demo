@@ -58,6 +58,7 @@ export default {
   components: {
     ProductModal
   },
+  inject: ['emitter'],
   methods: {
     openModal (isNew, item) {
       if (isNew) {
@@ -69,8 +70,8 @@ export default {
       const productModal = this.$refs.ProductModal
       productModal.showModal()
     },
-    getProducts () {
-      const api = `${process.env.VUE_APP_API}api/${process.env.VUE_APP_PATH}/admin/products`
+    getProducts (page = 1) {
+      const api = `${process.env.VUE_APP_API}api/${process.env.VUE_APP_PATH}/admin/products/?page=${page}`
       this.isLoading = true
       this.$http.get(api)
         .then(res => {
@@ -95,7 +96,19 @@ export default {
         .then(res => {
           this.isLoading = false
           this.$refs.ProductModal.hideModal()
-          this.getProducts()
+          if (res.data.success) {
+            this.getProducts()
+            this.emitter.emit('updata-message', {
+              style: 'success',
+              title: '更新成功'
+            })
+          } else {
+            this.emitter.emit('updata-message', {
+              style: 'danger',
+              title: '更新失敗',
+              content: res.data.message.join('、')
+            })
+          }
         })
         .catch(err => {
           this.isLoading = false
@@ -108,9 +121,19 @@ export default {
       this.$http.delete(api)
         .then(res => {
           this.isLoading = false
-          console.log(res)
           this.$refs.ProductModal.hideModal()
           this.getProducts()
+          if (res.data.success) {
+            this.emitter.emit('updata-message', {
+              style: 'success',
+              title: '刪除成功'
+            })
+          } else {
+            this.emitter.emit('updata-message', {
+              style: 'danger',
+              title: '刪除失敗'
+            })
+          }
         })
     }
   },

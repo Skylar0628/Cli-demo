@@ -3,14 +3,23 @@
    <Navbar></Navbar>
    <div class="container-fluid">
     <router-view/>
+    <ToasrMessage></ToasrMessage>
    </div>
 </template>
 
 <script>
+import ToasrMessage from '@/components/ToastMessage.vue'
+import emitter from '@/methods/emitter'
 import Navbar from '../components/NavBar.vue'
 export default {
   components: {
-    Navbar
+    Navbar,
+    ToasrMessage
+  },
+  provide () {
+    return {
+      emitter
+    }
   },
   created () {
     const token = document.cookie.replace(/(?:(?:^|.*;\s*)MyToken\s*=\s*([^;]*).*$)|^.*$/, '$1')
