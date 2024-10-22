@@ -16,13 +16,13 @@
     </thead>
     <tbody>
       <tr v-for="item in products" :key="item.id">
-        <td>{{ item.category }}</td>
+        <td>{{ item.cbtnategory }}</td>
         <td>{{ item.title }}</td>
         <td class="text-right">
-          {{ $filter.currency(item.origin_price) }}
+          {{ item.origin_price }}
         </td>
         <td class="text-right">
-          {{ $filters.currency(item.price) }}
+          {{ item.price }}
         </td>
         <td>
           <span class="text-success" v-if="item.is_enabled">啟用</span>
@@ -31,7 +31,7 @@
         <td>
           <div class="btn-group">
             <button class="btn btn-outline-primary btn-sm" @click="openModal(false, item)">編輯</button>
-            <button class="btn btn-outline-danger btn-sm" @click="deleteProduct(item)">刪除</button>
+            <button class="btn btn-outline-danger btn-sm" @click="opendeleteModal(item)">刪除</button>
           </div>
         </td>
       </tr>
@@ -42,9 +42,15 @@
    :product="temProduct"
    @updata-product="updataProduct"
    ref="ProductModal"></ProductModal>
+   <deleteModal
+    :temp="temProduct"
+    @deleteProduct="deleteProduct"
+    ref="DeletModal"
+   ></deleteModal>
 </template>
 
 <script>
+import deleteModal from './DeleteModal.vue'
 import Pagination from '@/components/Pagination.vue'
 import ProductModal from './ProductModal.vue'
 export default {
@@ -59,10 +65,15 @@ export default {
   },
   components: {
     ProductModal,
-    Pagination
+    Pagination,
+    deleteModal
   },
   inject: ['emitter'],
   methods: {
+    opendeleteModal (item) {
+      this.$refs.DeletModal.showModal()
+      this.temProduct = item
+    },
     openModal (isNew, item) {
       if (isNew) {
         this.temProduct = {}
@@ -120,13 +131,13 @@ export default {
         })
     },
     deleteProduct (item) {
-      const api = `${process.env.VUE_APP_API}api/${process.env.VUE_APP_PATH}/admin/product/${item.id}`
+      const api = `${process.env.VUE_APP_API}api/${process.env.VUE_APP_PATH}/admin/product/${item}`
       this.isLoading = true
       this.$http.delete(api)
         .then(res => {
-          this.isLoading = false
-          this.$refs.ProductModal.hideModal()
           this.getProducts()
+          this.$refs.DeletModal.hideModal()
+          this.isLoading = false
           if (res.data.success) {
             this.emitter.emit('updata-message', {
               style: 'success',

@@ -6,7 +6,7 @@
       <h5 class="modal-title" id="exampleModalLabel">
         <span>新增產品</span>
       </h5>
-      <button type="button" class="btn-close"
+      <button type="button" class="btn-close "
               data-bs-dismiss="modal" aria-label="Close"></button>
     </div>
 
@@ -113,7 +113,7 @@
 </template>
 
 <script>
-import Modal from 'bootstrap/js/dist/modal'
+import Modalmixin from '@/mixins/Modalmixin'
 export default {
   props: {
     product: {
@@ -133,12 +133,6 @@ export default {
     }
   },
   methods: {
-    showModal () {
-      this.modal.show()
-    },
-    hideModal () {
-      this.modal.hide()
-    },
     uploadFild () {
       const uploadFile = this.$refs.fileInput.files[0]
       const formData = new FormData()
@@ -153,8 +147,6 @@ export default {
         })
     }
   },
-  mounted () {
-    this.modal = new Modal(this.$refs.modal)
-  }
+  mixins: [Modalmixin]
 }
 </script>
