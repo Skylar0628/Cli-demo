@@ -1,7 +1,7 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <div class="text-end">
-    <button class="btn btn-primary" @click="openModal">建立優惠券</button>
+    <button class="btn btn-primary" @click="openModal(true)">建立優惠券</button>
   </div>
   <table class="table nmt-4">
     <thead>
@@ -24,17 +24,19 @@
         </td>
         <td>
           <div class="btn-group">
-            <button class="btn btn-outline-primary btn-sm">編輯</button>
-            <button class="btn btn-outline-danger btn-sm">刪除</button>
+            <button class="btn btn-outline-primary btn-sm" @click="openModal( false, item )">編輯</button>
+            <button class="btn btn-outline-danger btn-sm" @click="opendeleteModal(item)">刪除</button>
           </div>
         </td>
        </tr>
     </tbody>
   </table>
   <couponmodal :coupon="tempCoupon" @update-coupon="updateCoupon" ref="couponModal"></couponmodal>
+  <deleteModal ref="delModal" :temp="tempCoupon" @deleteProduct="deleteCoupon"></deleteModal>
 </template>
 
 <script>
+import deleteModal from '@/views/DeleteModal.vue'
 import couponmodal from '@/components/CouponModal.vue'
 export default {
   props: {
@@ -42,6 +44,7 @@ export default {
   data () {
     return {
       coupons: {},
+      isNew: false,
       tempCoupon: {
         title: '',
         is_enabled: 0,
@@ -51,20 +54,51 @@ export default {
     }
   },
   components: {
-    couponmodal
+    couponmodal,
+    deleteModal
   },
   methods: {
-    openModal () {
-      this.$refs.couponModal.showModal()
-      this.tempCoupon = {
-        due_date: new Date().getTime() / 1000
+    deleteCoupon (id) {
+      const api = `${process.env.VUE_APP_API}api/${process.env.VUE_APP_PATH}/admin/coupon/${id}`
+      this.$http.delete(api)
+        .then(res => {
+          console.log(res)
+          this.getCoupon()
+          this.closeDeleteModal()
+        })
+        .catch(err => {
+          console.log(err)
+        })
+    },
+    opendeleteModal (item) {
+      this.$refs.delModal.showModal()
+      this.tempCoupon = item
+    },
+    closeDeleteModal () {
+      this.$refs.delModal.hideModal()
+    },
+    openModal (isNew, item) {
+      this.isNew = isNew
+      if (this.isNew) {
+        this.tempCoupon = {
+          due_date: new Date().getTime() / 1000
+        }
+      } else {
+        this.tempCoupon = { ...item }
       }
+      this.$refs.couponModal.showModal()
     },
     updateCoupon (item) {
-      const api = `${process.env.VUE_APP_API}api/${process.env.VUE_APP_PATH}/admin/coupon`
-      this.$http.post(api, { data: item })
+      let api = `${process.env.VUE_APP_API}api/${process.env.VUE_APP_PATH}/admin/coupon`
+      let httpMethods = 'post'
+      if (!this.isNew) {
+        api = `${process.env.VUE_APP_API}api/${process.env.VUE_APP_PATH}/admin/coupon/${item.id}`
+        httpMethods = 'put'
+      }
+      this.$http[httpMethods](api, { data: item })
         .then(res => {
-          console.log('>>>', res)
+          this.getCoupon()
+          this.$refs.couponModal.hideModal()
         })
         .catch(err => {
           console.log(err)

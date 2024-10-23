@@ -11,7 +11,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-        <button type="button" class="btn btn-primary" @click="$emit('delete-product', temp.id)">刪除</button>
+        <button type="button" class="btn btn-primary" @click="$emit('deleteProduct', temp.id)">刪除</button>
       </div>
     </div>
   </div>
